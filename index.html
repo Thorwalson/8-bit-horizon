@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>8-bit Horizon | Game Studio</title>
+  <meta name="description" content="8-bit Horizon ist ein kleines Entwicklerstudio für WoW-Addons und Games. Hier findest du unsere Projekte und die Community.">
+  <meta name="theme-color" content="#0a0c1f">
+  <meta property="og:title" content="8-bit Horizon | Game Studio">
+  <meta property="og:description" content="WoW-Addons und Games von zwei Entwicklern, gebaut zusammen mit der Community.">
+  <meta property="og:image" content="assets/img/og.png">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="home">
+  <a class="skip" href="#projekte">Zum Inhalt springen</a>
+  <div id="site-header"></div>
+
+  <main>
+    <section class="hero" aria-label="Titelbildschirm">
+      <div class="scene-host" data-scene="hero"></div>
+      <div class="hero-content">
+        <p class="greeting" id="greeting" hidden></p>
+        <h1 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">8-bit Horizon Game Studio</h1>
+        <img class="hero-logo" src="assets/img/logo.png" alt="8-bit Horizon Game Studio" width="640" height="640" fetchpriority="high">
+        <p class="hero-tag" id="tagline">Addons und Games von zwei Entwicklern, gebaut zusammen mit der Community.</p>
+        <div class="hero-cta">
+          <a class="btn" href="#projekte"><span class="play"></span>Projekte ansehen</a>
+          <a class="btn btn-blue" data-discord href="#" target="_blank" rel="noopener">Discord beitreten</a>
+        </div>
+      </div>
+      <div id="theme-picker"></div>
+      <div class="hero-steps"></div>
+    </section>
+
+    <section class="section" id="projekte">
+      <div class="container">
+        <div class="section-head">
+          <h2>Projekte</h2>
+          <p>Was wir gerade bauen und was schon läuft. Klick eine Karte an für Details.</p>
+        </div>
+        <div class="grid" id="project-grid"></div>
+      </div>
+    </section>
+
+    <section class="section community" id="community">
+      <div class="container community-grid">
+        <div>
+          <h2>Bau mit uns mit</h2>
+          <p>Auf unserem Discord sammeln wir Feedback, beantworten Fragen und zeigen Neuigkeiten, bevor sie hier stehen. Wer ein Projekt verfolgen will, wählt die passende Rolle und sieht die Kanäle dazu.</p>
+          <ul class="checks">
+            <li>Support und Bug-Reports für jedes Projekt</li>
+            <li>Ideen vorschlagen und mit abstimmen</li>
+            <li>Zusammen zocken: mit einem Klick einen eigenen Sprachkanal erstellen</li>
+          </ul>
+          <a class="btn" data-discord href="#" target="_blank" rel="noopener">Discord beitreten</a>
+          <div id="socials"></div>
+        </div>
+        <div class="server-map px" aria-label="So ist unser Discord aufgebaut">
+          <h3>Willkommen</h3>
+          <ul><li>regeln</li><li>ankündigungen</li><li>rollen-wählen</li></ul>
+          <h3>Community</h3>
+          <ul><li>allgemein</li><li>vorstellungen</li></ul>
+          <h3>Gaming</h3>
+          <ul><li>gruppe-suchen</li><li class="voice">Erstelle deinen Kanal</li></ul>
+          <h3>Projekte</h3>
+          <ul><li>news-und-updates</li><li>bug-reports</li><li>feature-ideen</li></ul>
+          <p class="note">Die Projekt-Kanäle erscheinen, sobald du dir die Rolle dazu gibst.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="ueber-uns">
+      <div class="container about">
+        <h2>Über 8-bit Horizon</h2>
+        <p>Wir sind ein kleines Studio aus zwei Entwicklern. Wir bauen WoW-Addons und Spiele in unserer Freizeit und entwickeln sie mit den Leuten weiter, die sie benutzen.</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/themes.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/site.js"></script>
+</body>
+</html>
