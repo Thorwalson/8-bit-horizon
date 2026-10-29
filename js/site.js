@@ -10,6 +10,7 @@
   function h(tag, attrs, kids) {
     var e = document.createElement(tag);
     Object.keys(attrs || {}).forEach(function (k) {
+      if (attrs[k] == null || attrs[k] === false) return;
       if (k === "text") e.textContent = attrs[k];
       else if (k === "class") e.className = attrs[k];
       else if (k.slice(0, 2) === "on") e.addEventListener(k.slice(2), attrs[k]);
@@ -58,7 +59,7 @@
     host.className = "site-footer";
     var socials = (S.socials || []).filter(function (s) { return s.url; });
     var links = h("ul", { class: "footer-links" });
-    [["Projekte", "projects.html"], ["Impressum", "impressum.html"], ["Datenschutz", "datenschutz.html"]].forEach(function (l) {
+    [["Projekte", "projects.html"], ["Impressum", "impressum.html"], ["Datenschutz", "datenschutz.html"], ["Team", "admin.html"]].forEach(function (l) {
       links.appendChild(h("li", {}, [h("a", { href: l[1], text: l[0] })]));
     });
     links.appendChild(h("li", {}, [h("a", { href: S.discord, target: "_blank", rel: "noopener", text: "Discord" })]));
@@ -83,51 +84,117 @@
     window.addEventListener("h8theme", function (e) { scenes.forEach(function (s) { s.setTheme(e.detail.theme); }); updatePicker(); });
   }
 
-  /* ---------- Theme-Wahl (nur auf der Startseite) ---------- */
-  var pickerBtn, pickerList;
+  /* ---------- Verstecktes Modus-Menü (Burger-Icon + Passwort) ---------- */
+  var dlg;
   function picker() {
     var host = document.getElementById("theme-picker"); if (!host) return;
-    pickerBtn = h("button", { class: "theme-btn", "aria-haspopup": "true", "aria-expanded": "false" });
-    pickerList = h("ul", { class: "theme-list", hidden: "" });
-    var items = [{ id: "auto", name: "Automatisch (nach Datum)" }].concat(Object.keys(H8.THEMES).map(function (k) { return { id: k, name: H8.THEMES[k].name }; }));
-    items.forEach(function (it) {
-      var b = h("button", { type: "button", "data-id": it.id, text: it.name });
-      b.addEventListener("click", function () { H8.store(it.id); H8.apply(H8.resolve(it.id)); close(); });
-      pickerList.appendChild(h("li", {}, [b]));
-    });
-    function close() { pickerList.hidden = true; pickerBtn.setAttribute("aria-expanded", "false"); }
-    pickerBtn.addEventListener("click", function () {
-      var open = !pickerList.hidden; pickerList.hidden = open; pickerBtn.setAttribute("aria-expanded", String(!open));
-    });
-    document.addEventListener("click", function (e) { if (!host.contains(e.target)) close(); });
-    document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
-    host.appendChild(pickerBtn); host.appendChild(pickerList);
+    var btn = h("button", { class: "theme-btn", type: "button", "aria-label": "Design-Modus (geschützt)", "aria-haspopup": "dialog" }, [h("span"), h("span"), h("span")]);
+    dlg = h("dialog", { class: "modal", "aria-labelledby": "modal-title" });
+    dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });
+    btn.addEventListener("click", function () { renderModal(); if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", ""); });
+    host.appendChild(btn); host.appendChild(dlg);
     updatePicker();
   }
+
+  function renderModal() {
+    dlg.innerHTML = "";
+    if (H8.isUnlocked()) renderThemes(); else renderLock();
+  }
+
+  function renderLock() {
+    var input = h("input", { type: "password", id: "pw", autocomplete: "current-password", required: "", "aria-describedby": "pw-err" });
+    var err = h("p", { class: "modal-error", id: "pw-err", role: "alert", hidden: "" });
+    var form = h("form", { class: "modal-form" }, [
+      h("h2", { id: "modal-title", text: "Design-Modus" }),
+      h("p", { text: "Dieses Menü ist für das Team. Gib das Passwort ein, um das Seitendesign umzustellen." }),
+      h("label", { for: "pw", text: "Passwort" }), input, err,
+      h("div", { class: "modal-actions" }, [
+        h("button", { class: "btn btn-small", type: "submit", text: "Entsperren" }),
+        h("button", { class: "btn btn-small btn-ghost", type: "button", text: "Abbrechen", onclick: function () { dlg.close(); } })
+      ])
+    ]);
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      err.hidden = true;
+      H8.checkPassword(input.value).then(function (ok) {
+        if (ok) { H8.setUnlocked(true); renderModal(); }
+        else { err.textContent = "Falsches Passwort."; err.hidden = false; input.value = ""; input.focus(); }
+      }, function () {
+        err.textContent = "Dein Browser blockiert die Prüfung. Sie funktioniert nur über https oder localhost."; err.hidden = false;
+      });
+    });
+    dlg.appendChild(form);
+    setTimeout(function () { input.focus(); }, 30);
+  }
+
+  function renderThemes() {
+    var choice = H8.currentChoice();
+    var list = h("ul", { class: "theme-list" });
+    [{ id: "auto", name: "Automatisch (nach Datum)" }].concat(Object.keys(H8.THEMES).map(function (k) { return { id: k, name: H8.THEMES[k].name }; })).forEach(function (it) {
+      var b = h("button", { type: "button", text: it.name, class: it.id === choice ? "is-on" : "" });
+      b.addEventListener("click", function () { H8.store(it.id); H8.apply(H8.resolve(it.id)); renderThemes(); });
+      list.appendChild(h("li", {}, [b]));
+    });
+    dlg.innerHTML = "";
+    dlg.appendChild(h("h2", { id: "modal-title", text: "Design-Modus" }));
+    dlg.appendChild(h("p", { text: "Die Auswahl gilt nur in diesem Browser. Besucher sehen immer das Theme passend zum Datum." }));
+    dlg.appendChild(list);
+    dlg.appendChild(h("div", { class: "modal-actions" }, [
+      h("button", { class: "btn btn-small", type: "button", text: "Fertig", onclick: function () { dlg.close(); } }),
+      h("button", { class: "btn btn-small btn-ghost", type: "button", text: "Sperren", onclick: function () { H8.setUnlocked(false); dlg.close(); } })
+    ]));
+  }
+
   function updatePicker() {
-    if (!pickerBtn) return;
-    var id = H8.current, t = H8.THEMES[id], choice = H8.currentChoice();
-    pickerBtn.textContent = "Modus: " + t.name + (choice === "auto" ? "" : " *");
-    pickerList.querySelectorAll("button").forEach(function (b) { b.classList.toggle("is-on", b.getAttribute("data-id") === choice); });
+    var t = H8.THEMES[H8.current];
     var g = document.getElementById("greeting");
     if (g) { g.textContent = t.greeting || ""; g.hidden = !t.greeting; }
   }
 
   /* ---------- Projekte ---------- */
+  var PROJECTS = (window.H8_PROJECTS || []).slice();
+  var CATS = S.categories || [];
+  H8.srcResolver = H8.srcResolver || function (src) { return src; };
+
+  function safeUrl(u) { return /^https?:\/\//i.test(String(u || "").trim()) ? String(u).trim() : "#"; }
   function statusClass(s) { return s === "Live" ? "is-live" : s === "In Arbeit" ? "is-wip" : "is-plan"; }
+  function catName(id) { var c = CATS.filter(function (x) { return x.id === id; })[0]; return c ? c.name : id; }
+  function fmtDate(iso) { var m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[3] + "." + m[2] + "." + m[1] : ""; }
+  function galleryItems(p) {
+    var out = [];
+    (p.blocks || []).forEach(function (b) { if (b.type === "gallery") (b.items || []).forEach(function (m) { out.push(m); }); });
+    return out;
+  }
+  function coverOf(p) {
+    if (p.cover) return p.cover;
+    var img = galleryItems(p).filter(function (m) { return m.type === "image" && m.src; })[0];
+    return img ? img.src : null;
+  }
+  function lastTouched(p) {
+    var d = p.created || "";
+    (p.updates || []).forEach(function (u) { if (u.date > d) d = u.date; });
+    return d;
+  }
+
+  function tagsFor(p) {
+    var t = [h("span", { class: "tag", text: catName(p.category) })];
+    if (p.subtype && p.subtype !== catName(p.category)) t.push(h("span", { class: "tag", text: p.subtype }));
+    t.push(h("span", { class: "tag " + statusClass(p.status), text: p.status }));
+    return t;
+  }
 
   function card(p) {
     var art = h("div", { class: "card-art" });
-    if (p.screenshots && p.screenshots[0]) art.appendChild(h("img", { src: p.screenshots[0], alt: "" }));
-    var a = h("a", { class: "card px", href: "project.html?id=" + encodeURIComponent(p.id), style: "--c:" + (p.accent || "var(--accent)") }, [
+    var cv = coverOf(p);
+    if (cv) art.appendChild(h("img", { src: H8.srcResolver(cv), alt: "", loading: "lazy" }));
+    return h("a", { class: "card px", href: "project.html?id=" + encodeURIComponent(p.id), style: "--c:" + (p.accent || "var(--accent)") }, [
       art,
       h("div", { class: "card-body" }, [
-        h("div", { class: "tags" }, [h("span", { class: "tag", text: p.type }), h("span", { class: "tag " + statusClass(p.status), text: p.status })]),
+        h("div", { class: "tags" }, tagsFor(p)),
         h("h3", { text: p.title }),
         h("p", { text: p.summary })
       ])
     ]);
-    return a;
   }
 
   function ideaCard() {
@@ -140,35 +207,151 @@
     ]);
   }
 
+  /* Neuigkeiten: pro Kategorie das neueste Update */
+  function news() {
+    var host = document.getElementById("news-grid"); if (!host) return;
+    CATS.forEach(function (c) {
+      var items = [];
+      PROJECTS.filter(function (p) { return p.category === c.id; }).forEach(function (p) {
+        (p.updates || []).forEach(function (u) { items.push({ p: p, date: u.date, title: u.title, text: u.text }); });
+        if (p.created) items.push({ p: p, date: p.created, title: "Neues Projekt", text: p.summary });
+      });
+      items.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+      var it = items[0], node;
+      if (it) {
+        node = h("a", { class: "news px", href: "project.html?id=" + encodeURIComponent(it.p.id), style: "--c:" + (it.p.accent || "var(--accent)") }, [
+          h("div", { class: "news-head" }, [h("span", { class: "tag", text: c.name }), h("time", { datetime: it.date, text: fmtDate(it.date) })]),
+          h("h3", { text: it.p.title }),
+          h("p", { class: "news-title", text: it.title }),
+          it.text ? h("p", { class: "news-text", text: it.text }) : null
+        ]);
+      } else {
+        node = h("div", { class: "news news-empty px" }, [
+          h("div", { class: "news-head" }, [h("span", { class: "tag", text: c.name })]),
+          h("p", { class: "news-text", text: "Hier erscheint das nächste Update, sobald es etwas Neues gibt." })
+        ]);
+      }
+      host.appendChild(node);
+    });
+  }
+
   function projectsHome() {
     var host = document.getElementById("project-grid"); if (!host) return;
-    S.projects.forEach(function (p) { host.appendChild(card(p)); });
+    PROJECTS.slice().sort(function (a, b) { var x = lastTouched(a), y = lastTouched(b); return x < y ? 1 : x > y ? -1 : 0; }).slice(0, 5).forEach(function (p) { host.appendChild(card(p)); });
     host.appendChild(ideaCard());
   }
 
   function projectsList() {
     var host = document.getElementById("all-projects"); if (!host) return;
     var filters = document.getElementById("filters");
-    var types = []; S.projects.forEach(function (p) { if (types.indexOf(p.type) < 0) types.push(p.type); });
-    var active = "Alle";
+    var active = new URLSearchParams(location.search).get("kategorie") || "all";
+    if (active !== "all" && !CATS.some(function (c) { return c.id === active; })) active = "all";
     function render() {
       host.innerHTML = "";
-      S.projects.filter(function (p) { return active === "Alle" || p.type === active; }).forEach(function (p) { host.appendChild(card(p)); });
-      if (active === "Alle") host.appendChild(ideaCard());
-      filters.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.textContent === active)); });
+      var list = PROJECTS.filter(function (p) { return active === "all" || p.category === active; });
+      list.forEach(function (p) { host.appendChild(card(p)); });
+      if (!list.length) host.appendChild(h("p", { class: "empty", text: "In dieser Kategorie gibt es noch nichts. Schau bald wieder vorbei oder sag uns auf Discord, was dir fehlt." }));
+      if (active === "all" || !list.length) host.appendChild(ideaCard());
+      filters.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-id") === active)); });
     }
-    ["Alle"].concat(types).forEach(function (t) {
-      var b = h("button", { type: "button", class: "chip", text: t });
-      b.addEventListener("click", function () { active = t; render(); });
+    [{ id: "all", name: "Alle" }].concat(CATS).forEach(function (c) {
+      var n = c.id === "all" ? PROJECTS.length : PROJECTS.filter(function (p) { return p.category === c.id; }).length;
+      var b = h("button", { type: "button", class: "chip", "data-id": c.id, text: c.name + " (" + n + ")" });
+      b.addEventListener("click", function () { active = c.id; render(); });
       filters.appendChild(b);
     });
     render();
   }
 
+  /* ---------- Medien: Bilder und YouTube ---------- */
+  function youtubeId(url) {
+    if (!url) return null;
+    var m = String(url).match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))([A-Za-z0-9_-]{11})/);
+    return m ? m[1] : null;
+  }
+
+  var lb, lbIndex, lbItems, lbName;
+  function openLightbox(items, index, name) {
+    lbItems = items; lbName = name;
+    if (!lb) {
+      lb = h("dialog", { class: "lightbox", "aria-label": "Galerie" });
+      lb.addEventListener("click", function (e) { if (e.target === lb) lb.close(); });
+      lb.addEventListener("close", function () { var st = lb.querySelector(".lb-stage"); if (st) st.innerHTML = ""; });
+      lb.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowRight") { e.preventDefault(); showMedia(lbIndex + 1); }
+        if (e.key === "ArrowLeft") { e.preventDefault(); showMedia(lbIndex - 1); }
+      });
+      document.body.appendChild(lb);
+    }
+    showMedia(index);
+    if (lb.showModal) { if (!lb.open) lb.showModal(); } else lb.setAttribute("open", "");
+  }
+
+  function showMedia(i) {
+    var n = lbItems.length; lbIndex = (i + n) % n;
+    var m = lbItems[lbIndex], stage = h("div", { class: "lb-stage" });
+    if (m.type === "youtube") {
+      stage.className = "lb-stage lb-video";
+      stage.appendChild(h("iframe", {
+        src: "https://www.youtube-nocookie.com/embed/" + youtubeId(m.url) + "?rel=0&autoplay=1",
+        title: m.title || "Video", allow: "autoplay; encrypted-media; picture-in-picture; fullscreen", allowfullscreen: "", referrerpolicy: "strict-origin-when-cross-origin"
+      }));
+    } else {
+      stage.appendChild(h("img", { src: H8.srcResolver(m.src), alt: m.caption || "Screenshot von " + lbName }));
+    }
+    lb.innerHTML = "";
+    var cap = m.caption || m.title || "";
+    lb.appendChild(stage);
+    lb.appendChild(h("p", { class: "lb-cap", text: cap }));
+    var nav = h("div", { class: "lb-nav" }, [
+      n > 1 ? h("button", { class: "btn btn-small btn-ghost", type: "button", text: "Zurück", onclick: function () { showMedia(lbIndex - 1); } }) : null,
+      n > 1 ? h("span", { class: "lb-count", text: (lbIndex + 1) + " / " + n }) : null,
+      n > 1 ? h("button", { class: "btn btn-small btn-ghost", type: "button", text: "Weiter", onclick: function () { showMedia(lbIndex + 1); } }) : null,
+      h("button", { class: "btn btn-small", type: "button", text: "Schließen", onclick: function () { lb.close(); } })
+    ]);
+    lb.appendChild(nav);
+  }
+
+  /* Bausteine (Überschrift, Text, Liste, Galerie) in ein Element rendern. Wird auch von der Dashboard-Vorschau benutzt. */
+  function renderBlocks(p, into) {
+    var hasVideo = false;
+    (p.blocks || []).forEach(function (b) {
+      if (b.type === "heading") {
+        if (b.text) into.appendChild(h("h2", { class: "block-h", text: b.text }));
+      } else if (b.type === "text") {
+        String(b.text || "").split(/\n{2,}/).forEach(function (para) {
+          if (para.trim()) into.appendChild(h("p", { class: "block-p", text: para.trim() }));
+        });
+      } else if (b.type === "list") {
+        var items = (b.items || []).filter(function (x) { return String(x).trim(); });
+        if (items.length) { var ul = h("ul", { class: "checks" }); items.forEach(function (x) { ul.appendChild(h("li", { text: x })); }); into.appendChild(ul); }
+      } else if (b.type === "gallery") {
+        var media = (b.items || []).filter(function (m) { return m && (m.type === "image" ? m.src : youtubeId(m.url)); });
+        if (!media.length) return;
+        var grid = h("div", { class: "gallery" });
+        media.forEach(function (m, i) {
+          var isV = m.type === "youtube"; if (isV) hasVideo = true;
+          var tile = h("button", { type: "button", class: "tile" + (isV ? " tile-video" : ""), "aria-label": (isV ? "Video abspielen: " : "Bild vergrößern: ") + (m.title || m.caption || p.title) });
+          if (isV) {
+            tile.appendChild(h("span", { class: "tile-play" }));
+            tile.appendChild(h("span", { class: "tile-label", text: m.title || "Video ansehen" }));
+          } else {
+            tile.appendChild(h("img", { src: H8.srcResolver(m.src), alt: m.caption || "Screenshot von " + p.title, loading: "lazy" }));
+            if (m.caption) tile.appendChild(h("span", { class: "tile-label", text: m.caption }));
+          }
+          tile.addEventListener("click", function () { openLightbox(media, i, p.title); });
+          grid.appendChild(tile);
+        });
+        into.appendChild(grid);
+      }
+    });
+    if (hasVideo) into.appendChild(h("p", { class: "fineprint", text: "Videos laden erst nach dem Klick von YouTube (youtube-nocookie.com)." }));
+  }
+
   function projectDetail() {
     var host = document.getElementById("project-detail"); if (!host) return;
     var id = new URLSearchParams(location.search).get("id");
-    var p = S.projects.filter(function (x) { return x.id === id; })[0];
+    var p = PROJECTS.filter(function (x) { return x.id === id; })[0];
     var title = document.getElementById("project-title");
     if (!p) {
       if (title) title.textContent = "Projekt nicht gefunden";
@@ -180,25 +363,32 @@
     document.documentElement.style.setProperty("--accent", p.accent || "var(--accent)");
     if (title) title.textContent = p.title;
     var meta = document.getElementById("project-meta");
-    if (meta) { meta.appendChild(h("span", { class: "tag", text: p.type })); meta.appendChild(h("span", { class: "tag " + statusClass(p.status), text: p.status })); }
+    if (meta) tagsFor(p).forEach(function (t) { meta.appendChild(t); });
 
     var main = h("div", { class: "detail-main" });
     main.appendChild(h("p", { class: "lead", text: p.summary }));
-    (p.description || []).forEach(function (t) { main.appendChild(h("p", { text: t })); });
-    if (p.screenshots && p.screenshots.length) {
-      var shots = h("div", { class: "shots" });
-      p.screenshots.forEach(function (s) { shots.appendChild(h("img", { src: s, alt: "Screenshot von " + p.title, loading: "lazy" })); });
-      main.appendChild(shots);
-    }
+    renderBlocks(p, main);
+
     var side = h("aside", { class: "detail-side px" });
-    if (p.features && p.features.length) {
-      side.appendChild(h("h2", { text: "Das kann es" }));
-      var ul = h("ul", { class: "checks" }); p.features.forEach(function (f) { ul.appendChild(h("li", { text: f })); }); side.appendChild(ul);
-    }
     if (p.links && p.links.length) {
       var box = h("div", { class: "side-links" });
-      p.links.forEach(function (l, i) { box.appendChild(h("a", { class: "btn" + (i ? " btn-ghost" : ""), href: l.url, target: "_blank", rel: "noopener", text: l.label })); });
+      p.links.forEach(function (l, i) { box.appendChild(h("a", { class: "btn" + (i ? " btn-ghost" : ""), href: safeUrl(l.url), target: "_blank", rel: "noopener", text: l.label })); });
       side.appendChild(box);
+    }
+    var ups = (p.updates || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    side.appendChild(h("h2", { class: "side-h", text: "Updates" }));
+    if (ups.length) {
+      var ol = h("ol", { class: "updates" });
+      ups.slice(0, 8).forEach(function (u) {
+        ol.appendChild(h("li", {}, [
+          h("time", { datetime: u.date, text: fmtDate(u.date) }),
+          h("strong", { text: u.title }),
+          u.text ? h("span", { text: u.text }) : null
+        ]));
+      });
+      side.appendChild(ol);
+    } else {
+      side.appendChild(h("p", { class: "side-empty", text: "Noch keine Updates. Hier erscheinen neue Versionen und Neuigkeiten." }));
     }
     host.appendChild(main); host.appendChild(side);
   }
@@ -215,5 +405,6 @@
     var y = document.getElementById("year"); if (y) y.textContent = new Date().getFullYear();
   }
 
-  header(); footer(); wire(); scenesInit(); picker(); projectsHome(); projectsList(); projectDetail(); updatePicker();
+  H8.h = h; H8.renderBlocks = renderBlocks; H8.youtubeId = youtubeId; H8.catName = catName; H8.fmtDate = fmtDate;
+  header(); footer(); wire(); scenesInit(); picker(); news(); projectsHome(); projectsList(); projectDetail(); updatePicker();
 })();

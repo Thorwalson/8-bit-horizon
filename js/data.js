@@ -9,6 +9,12 @@ window.SITE = {
 
   discord: "https://discord.gg/2z7APn3wnQ",
 
+  // Passwort für das versteckte Modus-Menü (als Hash, nicht im Klartext).
+  // Aktuelles Passwort: horizon  <- bitte ändern!
+  // Neues Passwort: passwort.html im Browser öffnen, Passwort eingeben,
+  // die erzeugte Zeile hier an Stelle dieser Zeile einfügen.
+  themePasswordHash: "21814002a45929db5d29971d078b6e3d1e634461b19afdb621fecb4291d8ff6e",
+
   // Weitere Plattformen: URL eintragen, dann erscheint der Link automatisch.
   // Leer lassen = bleibt unsichtbar.
   socials: [
@@ -20,47 +26,15 @@ window.SITE = {
     { name: "X",         url: "" }
   ],
 
-  // Typen erscheinen automatisch als Filter auf der Projekte-Seite.
-  // status: "Live" | "In Arbeit" | "Geplant"
-  projects: [
-    {
-      id: "wow-addon",                       // wird in der URL benutzt: project.html?id=wow-addon
-      title: "WoW-Addon",                    // TODO: Name deines Addons eintragen
-      type: "WoW-Addon",
-      status: "In Arbeit",
-      accent: "#ff8a1f",
-      summary: "Ein Addon für World of Warcraft, entwickelt von uns und mit Feedback aus der Community weitergebaut.",
-      description: [
-        "TODO: Hier steht die ausführliche Beschreibung deines Addons: Was macht es, für wen ist es gedacht, was macht es besonders?",
-        "Jede Zeile in dieser Liste wird ein eigener Absatz."
-      ],
-      features: [
-        "TODO: Erste Funktion",
-        "TODO: Zweite Funktion",
-        "TODO: Dritte Funktion"
-      ],
-      links: [
-        // { label: "CurseForge", url: "https://..." },
-        // { label: "GitHub",     url: "https://..." },
-        { label: "Support im Discord", url: "https://discord.gg/2z7APn3wnQ" }
-      ],
-      screenshots: []                        // z. B. ["assets/img/wow-addon-1.png"]
-    },
-    {
-      id: "naechstes-spiel",
-      title: "Nächstes Spiel",
-      type: "Game",
-      status: "Geplant",
-      accent: "#3aa8ff",
-      summary: "Ein neues Spielprojekt ist in Planung. Auf Discord kannst du schon jetzt mitreden.",
-      description: [
-        "TODO: Sobald das Projekt konkret wird, kommen hier Idee, Genre und Stand der Entwicklung hin."
-      ],
-      features: [],
-      links: [
-        { label: "Ideen auf Discord teilen", url: "https://discord.gg/2z7APn3wnQ" }
-      ],
-      screenshots: []
-    }
-  ]
+  // Kategorien der Projekte (Reihenfolge = Reihenfolge auf der Seite)
+  categories: [
+    { id: "addons", name: "Addons und Mods" },
+    { id: "games",  name: "Spiele" },
+    { id: "tools",  name: "Programme und Tools" }
+  ],
+
+  // Hierhin veröffentlicht das Admin-Dashboard (admin.html).
+  github: { owner: "Thorwalson", repo: "8-bit-horizon" }
+
+  // Die Projekte selbst stehen in data/projects.js und werden über admin.html bearbeitet.
 };

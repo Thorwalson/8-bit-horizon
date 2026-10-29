@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Passwort setzen | 8-bit Horizon</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0a0c1f">
+  <meta property="og:image" content="assets/img/og.png">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="tool">
+  <div id="site-header"></div>
+  <div class="banner">
+    <div class="scene-host" data-scene="strip"></div>
+    <div class="container banner-text">
+      <h1>Passwort setzen</h1>
+    </div>
+  </div>
+
+  <main class="section">
+    <div class="container prose">
+      <p>Hier erzeugst du die Zeile für ein neues Passwort des Modus-Menüs. Dein Passwort wird nirgends gesendet oder gespeichert, die Berechnung passiert in deinem Browser.</p>
+      <form class="modal-form" id="pwform" style="max-width:440px">
+        <label for="newpw" style="display:block;font-family:var(--font-ui);font-size:12px;margin-bottom:8px">Neues Passwort</label>
+        <input id="newpw" type="text" autocomplete="off" style="width:100%;font:inherit;font-size:20px;color:var(--ink);background:var(--panel);border:0;padding:12px 14px;box-shadow:0 0 0 4px var(--line)">
+        <div class="modal-actions"><button class="btn btn-small" type="submit">Zeile erzeugen</button></div>
+      </form>
+      <div id="result" hidden>
+        <h2>So geht es weiter</h2>
+        <p>Kopiere diese Zeile und ersetze in <code>js/data.js</code> die Zeile, die mit <code>themePasswordHash</code> beginnt. Danach die Datei auf GitHub speichern.</p>
+        <p><code id="line" style="display:block;word-break:break-all;background:var(--panel);padding:12px;color:var(--ink)"></code></p>
+        <button class="btn btn-small btn-ghost" type="button" id="copy">Kopieren</button>
+      </div>
+      <p class="fineprint">Hinweis: Auf einer reinen GitHub-Pages-Seite ist das ein Sichtschutz, kein Hochsicherheitsschloss. Wähle kein Passwort, das du anderswo benutzt.</p>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/themes.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/site.js"></script>
+  <script>
+    document.getElementById("pwform").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var pw = document.getElementById("newpw").value; if (!pw) return;
+      window.H8.hashPassword(pw).then(function (hash) {
+        document.getElementById("line").textContent = 'themePasswordHash: "' + hash + '",';
+        document.getElementById("result").hidden = false;
+      }, function () { alert("Dein Browser blockiert die Berechnung. Öffne die Seite über https oder localhost."); });
+    });
+    document.getElementById("copy").addEventListener("click", function () {
+      var t = document.getElementById("line").textContent;
+      if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { document.getElementById("copy").textContent = "Kopiert"; });
+    });
+  </script>
+</body>
+</html>

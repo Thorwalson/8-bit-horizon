@@ -174,8 +174,22 @@
   function stored() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
   function store(v) { try { if (v === "auto") localStorage.removeItem(KEY); else localStorage.setItem(KEY, v); } catch (e) {} }
 
+  /* Passwort-Sperre für das Modus-Menü (nur Sichtschutz, siehe README) */
+  var SALT = "8bh";
+  function hashPassword(pw) {
+    if (!(window.crypto && crypto.subtle)) return Promise.reject(new Error("nocrypto"));
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(SALT + ":" + pw)).then(function (buf) {
+      return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+    });
+  }
+  function checkPassword(pw) {
+    return hashPassword(pw).then(function (h) { return h === String((window.SITE && window.SITE.themePasswordHash) || ""); });
+  }
+  function isUnlocked() { try { return sessionStorage.getItem("h8-unlocked") === "1"; } catch (e) { return false; } }
+  function setUnlocked(on) { try { if (on) sessionStorage.setItem("h8-unlocked", "1"); else sessionStorage.removeItem("h8-unlocked"); } catch (e) {} }
+
   function currentChoice() {
-    var q = new URLSearchParams(location.search).get("theme");
+    var q = isUnlocked() ? new URLSearchParams(location.search).get("theme") : null;
     if (q && THEMES[q]) return q;
     var s = stored();
     if (s && THEMES[s]) return s;
@@ -196,7 +210,8 @@
 
   window.H8 = {
     THEMES: THEMES, pickByDate: pickByDate, resolve: resolve, apply: apply,
-    currentChoice: currentChoice, store: store
+    currentChoice: currentChoice, store: store,
+    hashPassword: hashPassword, checkPassword: checkPassword, isUnlocked: isUnlocked, setUnlocked: setUnlocked
   };
 
   apply(resolve(currentChoice()));
