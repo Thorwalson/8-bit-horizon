@@ -98,14 +98,14 @@ window.H8_PROJECTS = [
     "links": [
       {
         "label": "Download",
-        "url": "https://thorwalson.github.io/charakter-journal/downloads/CharakterJournal-Namensgenerator.html"
+        "url": "https://thorwalson.github.io/charakter-journal/namen-generator.html"
       }
     ],
     "updates": [
       {
         "date": "2026-10-30",
         "title": "WoW Namesgenerator",
-        "text": "Ein WoW Namesgenerator für alle\nKlassen\nVölker\nGender\nLustige Namen\nAnzahl 1-10\nmehr als 9Mrd Nameskombinationen"
+        "text": "Ein WoW Namesgenerator für alle\nKlassen,\nVölker,\nGender,\nLustige Namen,\nAnzahl 1-10,\nmehr als 9Mrd Nameskombinationen"
       }
     ]
   }
