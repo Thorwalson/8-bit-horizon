@@ -11,12 +11,28 @@ window.H8_PROJECTS = [
     "summary": "Ein Addon für World of Warcraft, entwickelt von uns und mit Feedback aus der Community weitergebaut.",
     "created": "2026-10-26",
     "blocks": [
-      { "type": "text", "text": "TODO: Hier steht die ausführliche Beschreibung deines Addons: Was macht es, für wen ist es gedacht, was macht es besonders?" },
-      { "type": "heading", "text": "Das kann es" },
-      { "type": "list", "items": ["TODO: Erste Funktion", "TODO: Zweite Funktion", "TODO: Dritte Funktion"] }
+      {
+        "type": "text",
+        "text": "TODO: Hier steht die ausführliche Beschreibung deines Addons: Was macht es, für wen ist es gedacht, was macht es besonders?"
+      },
+      {
+        "type": "heading",
+        "text": "Das kann es"
+      },
+      {
+        "type": "list",
+        "items": [
+          "TODO: Erste Funktion",
+          "TODO: Zweite Funktion",
+          "TODO: Dritte Funktion"
+        ]
+      }
     ],
     "links": [
-      { "label": "Support im Discord", "url": "https://discord.gg/2z7APn3wnQ" }
+      {
+        "label": "Support im Discord",
+        "url": "https://discord.gg/2z7APn3wnQ"
+      }
     ],
     "updates": []
   },
@@ -30,11 +46,67 @@ window.H8_PROJECTS = [
     "summary": "Ein neues Spielprojekt ist in Planung. Auf Discord kannst du schon jetzt mitreden.",
     "created": "2026-10-26",
     "blocks": [
-      { "type": "text", "text": "TODO: Sobald das Projekt konkret wird, kommen hier Idee, Genre und Stand der Entwicklung hin." }
+      {
+        "type": "text",
+        "text": "TODO: Sobald das Projekt konkret wird, kommen hier Idee, Genre und Stand der Entwicklung hin."
+      }
     ],
     "links": [
-      { "label": "Ideen auf Discord teilen", "url": "https://discord.gg/2z7APn3wnQ" }
+      {
+        "label": "Ideen auf Discord teilen",
+        "url": "https://discord.gg/2z7APn3wnQ"
+      }
     ],
     "updates": []
+  },
+  {
+    "id": "wow-namesgenerator",
+    "title": "WoW Namesgenerator",
+    "category": "tools",
+    "subtype": "Tool",
+    "status": "Live",
+    "accent": "#ff8a1f",
+    "summary": "Ein WoW Namesgenerator für alle KLassen, Völker mit Vor- & Nachname",
+    "created": "2026-10-30",
+    "blocks": [
+      {
+        "type": "heading",
+        "text": "WoW Namesgenerator"
+      },
+      {
+        "type": "gallery",
+        "items": [
+          {
+            "type": "image",
+            "src": "assets/uploads/mvveoqfq-wow-namensgenerator-screenshot.png",
+            "caption": ""
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "items": [
+          "Klassen",
+          "Völker",
+          "Gender",
+          "Lustige Namen",
+          "Anzahl 1-10",
+          "mehr als 9Mrd Nameskombinationen"
+        ]
+      }
+    ],
+    "links": [
+      {
+        "label": "Download",
+        "url": "https://thorwalson.github.io/charakter-journal/downloads/CharakterJournal-Namensgenerator.html"
+      }
+    ],
+    "updates": [
+      {
+        "date": "2026-10-30",
+        "title": "WoW Namesgenerator",
+        "text": "Ein WoW Namesgenerator für alle\nKlassen\nVölker\nGender\nLustige Namen\nAnzahl 1-10\nmehr als 9Mrd Nameskombinationen"
+      }
+    ]
   }
 ];
